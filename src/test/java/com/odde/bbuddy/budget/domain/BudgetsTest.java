@@ -9,12 +9,10 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyList;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class BudgetsTest {
     BudgetRepo repo = mock(BudgetRepo.class);
@@ -69,6 +67,28 @@ public class BudgetsTest {
         Integer total = budgets.getTotal("2017-04-01", "2017-04-19");
 
         assertThat(total).isEqualTo(1900);
+    }
+
+    @Test
+    public void getTotalCrossMultiMonths() throws ParseException {
+        when(repo.findByMonthIn(anyList())).thenReturn(Arrays.asList(
+                budget("2017-04", 3000), budget("2017-05", 3100)));
+
+        Integer total = budgets.getTotal("2017-04-01", "2017-05-19");
+
+        assertThat(total).isEqualTo(4900);
+    }
+
+    @Test
+    public void getTotalCrossMultiMoths_withEmptyBudgetInBetween() throws ParseException {
+        when(repo.findByMonthIn(anyList())).thenReturn(Arrays.asList(
+                budget("2017-04", 3000),
+                budget("2017-05", 3100),
+                budget("2017-07", 6200)));
+
+        Integer total = budgets.getTotal("2017-04-01", "2017-07-20");
+
+        assertThat(total).isEqualTo(10100);
     }
 
     private Budget existedBudget(Long id, String month, int oldAmount) {

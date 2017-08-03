@@ -5,16 +5,15 @@ import com.odde.bbuddy.budget.repo.BudgetRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.math.BigInteger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Period;
+import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -40,19 +39,85 @@ public class Budgets {
         return repo.findAll();
     }
 
-    public Integer getTotal(String startDate, String endDate) throws ParseException {
-        List<MonthAndDays> monthAndDays = getMonthAndDays(startDate, endDate);
+    class Dates {
 
-        List<Budget> budgets = repo.findByMonthIn(monthAndDays.stream().map(MonthAndDays::getMonth).collect(Collectors.toList()));
+        final DateTimeFormatter TO_MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM");
+        private final LocalDate startDate;
+        private final LocalDate endDate;
+        private final boolean isTheSameMonth;
 
-        return budgets.stream().mapToInt(budget -> {
-            if (budget.getMonth().equals(monthAndDays.get(0).getMonth())) {
-                return BigInteger.valueOf(budget.getAmount()).divide(BigInteger.valueOf(30))
-                        .multiply(BigInteger.valueOf(monthAndDays.get(0).getDays())).intValue();
-            }
-            return 0;
+        Dates(String start, String end) {
+            startDate = LocalDate.parse(start, DateTimeFormatter.ISO_LOCAL_DATE);
+            endDate = LocalDate.parse(end, DateTimeFormatter.ISO_LOCAL_DATE);
+            isTheSameMonth = YearMonth.from(startDate).equals(YearMonth.from(endDate));
+        }
+
+        List<YearMonth> getYearMonthListBetween() {
+            if (isTheSameMonth) {
+                return Collections.singletonList(YearMonth.from(startDate));
+            } else {
+                List<YearMonth> rtn = new ArrayList<>();
+                long monthRange = ChronoUnit.MONTHS.between(startDate, endDate);
+                for (int i = 0; i <= monthRange; i++) {
+                    rtn.add(YearMonth.from(startDate).plusMonths(i));
                 }
-        ).sum();
+                return rtn;
+            }
+        }
+
+        Map<String, Map<String, Integer>> getDetailsOfEachMonth() {
+            Map<String, Map<String, Integer>> rtn = new HashMap<>();
+            long monthRange = ChronoUnit.MONTHS.between(startDate, endDate);
+
+            if (isTheSameMonth) {
+                Map<String, Integer> detail = new HashMap<>();
+                detail.put("actual", getDaysBetween(startDate, endDate) + 1);
+                detail.put("length", startDate.lengthOfMonth());
+                rtn.put(TO_MONTH_FORMATTER.format(startDate), detail);
+            } else {
+                for (int i = 0; i <= monthRange; i++) {
+                    YearMonth inYearMonth = YearMonth.from(startDate.plusMonths(i));
+                    Map<String, Integer> detail = new HashMap<>();
+                    detail.put("length", inYearMonth.lengthOfMonth());
+                    detail.put("actual", getActualDays(inYearMonth));
+                    rtn.put(TO_MONTH_FORMATTER.format(inYearMonth), detail);
+                }
+            }
+
+            return rtn;
+        }
+
+        private int getActualDays(YearMonth compareMonth) {
+            if (compareMonth.equals(YearMonth.from(startDate))) {
+                return getDaysBetween(startDate, compareMonth.atEndOfMonth()) + 1;
+            }
+            if (compareMonth.equals(YearMonth.from(endDate))) {
+                return getDaysBetween(compareMonth.atDay(1), endDate) + 1;
+            }
+            return compareMonth.lengthOfMonth();
+        }
+
+        private int getDaysBetween(LocalDate start, LocalDate end) {
+            return Math.toIntExact(ChronoUnit.DAYS.between(start, end));
+        }
+    }
+
+    public Integer getTotal(String startDate, String endDate) throws ParseException {
+        Dates dates = new Dates(startDate, endDate);
+        List<YearMonth> monthListBetween = dates.getYearMonthListBetween();
+
+        List<Budget> budgets = repo.findByMonthIn(monthListBetween.stream()
+                .map(dates.TO_MONTH_FORMATTER::format).collect(Collectors.toList()));
+
+        Map<String, Map<String, Integer>> detailOfMonth = dates.getDetailsOfEachMonth();
+        int rtn = 0;
+        for (Budget budget : budgets) {
+            Map<String, Integer> budgetMonthDetail = detailOfMonth.get(budget.getMonth());
+            int currentBudget =
+                    budget.getAmount() * budgetMonthDetail.get("actual") / budgetMonthDetail.get("length");
+            rtn = rtn + currentBudget;
+        }
+        return rtn;
     }
 
     class MonthAndDays {
