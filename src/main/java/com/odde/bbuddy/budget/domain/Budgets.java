@@ -39,7 +39,7 @@ public class Budgets {
 
     public Integer getTotal(String startDate, String endDate) throws ParseException {
         List<Budget> budgets = repo.findByMonthIn(getMonths(startDate, endDate));
-        return budgets.get(0).getAmount();
+        return budgets.stream().mapToInt(Budget::getAmount).sum();
     }
 
     private List<String> getMonths(String startDate, String endDate) throws ParseException {
