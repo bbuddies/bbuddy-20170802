@@ -68,6 +68,15 @@ public class BudgetControllerTest {
         assertThat(modelAndView.getModel().get("total")).isEqualTo(total);
     }
 
+    @Test
+    public void getTotalWithValue() {
+        String total = "1000";
+
+        ModelAndView modelAndView = controller.getTotal(total);
+
+        assertThat(modelAndView.getModelMap().get("total")).isEqualTo(total);
+    }
+
     private Budget saveBudget(String month,
                               int amount) {
         Budget budget = new Budget();

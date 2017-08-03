@@ -11,6 +11,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -59,6 +60,15 @@ public class BudgetsTest {
     public void getTotalByRepo() throws ParseException {
         budgets.getTotal("2017-04-01", "2017-04-30");
         verify(repo).findByMonthIn(Arrays.asList("2017-04"));
+    }
+
+    @Test
+    public void getTotalInSameMonth() throws ParseException {
+        when(repo.findByMonthIn(anyList())).thenReturn(Arrays.asList(budget("2017-04", 3000)));
+
+        Integer total = budgets.getTotal("2017-04-01", "2017-04-19");
+
+        assertThat(total).isEqualTo(1900);
     }
 
     private Budget existedBudget(Long id, String month, int oldAmount) {

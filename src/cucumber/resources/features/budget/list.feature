@@ -26,3 +26,10 @@ Feature: Budget
       | 2017-04 | 5000   |
     When query starts with date "2017-04-01" and ends with date "2017-04-30"
     Then total of budget is 5000
+
+  Scenario: Query budget within one month range and get a total of all budgets
+    Given exist a list of budgets
+      | month   | amount |
+      | 2017-04 | 3000   |
+    When query starts with date "2017-04-02" and ends with date "2017-04-20"
+    Then total of budget is 1900
