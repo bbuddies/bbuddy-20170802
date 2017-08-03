@@ -5,6 +5,7 @@ import com.odde.bbuddy.budget.repo.BudgetRepo;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -52,6 +53,12 @@ public class BudgetsTest {
         verify(repo).save(captor.capture());
         assertThat(captor.getValue().getId()).isEqualTo(id);
         assertThat(captor.getValue().getAmount()).isEqualTo(newAmount);
+    }
+
+    @Test
+    public void getTotalByRepo() throws ParseException {
+        budgets.getTotal("2017-04-01", "2017-04-30");
+        verify(repo).findByMonthIn(Arrays.asList("2017-04"));
     }
 
     private Budget existedBudget(Long id, String month, int oldAmount) {

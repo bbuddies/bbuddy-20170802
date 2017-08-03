@@ -6,6 +6,7 @@ import com.odde.bbuddy.budget.view.BudgetInView;
 import org.junit.Test;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -55,7 +56,7 @@ public class BudgetControllerTest {
     }
 
     @Test
-    public void getTotal() {
+    public void getTotal() throws ParseException {
         Integer total = 5000;
         String startDate = "2017-04-01";
         String endDate = "2017-04-30";

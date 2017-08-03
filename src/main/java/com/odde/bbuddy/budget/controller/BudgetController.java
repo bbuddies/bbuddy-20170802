@@ -67,14 +67,19 @@ public class BudgetController {
     }
 
     @GetMapping("getTotal")
-    public String getTotal() {
-        return "budgets/getTotal";
+    public ModelAndView getTotal(String total) {
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("budgets/getTotal");
+        if (total != null && !total.isEmpty()) {
+            modelAndView.getModel().put("total", total);
+        }
+        return modelAndView;
     }
 
     @PostMapping("getTotal")
-    public ModelAndView getTotal(String startDate, String endDate) {
+    public ModelAndView getTotal(String startDate, String endDate) throws ParseException {
         ModelAndView modelAndView = new ModelAndView();
-        modelAndView.addObject("total", budgets.getTotal(startDate, endDate));
+        modelAndView.getModel().put("total", budgets.getTotal(startDate, endDate));
         modelAndView.setViewName("redirect:/budgets/getTotal");
         return modelAndView;
     }
