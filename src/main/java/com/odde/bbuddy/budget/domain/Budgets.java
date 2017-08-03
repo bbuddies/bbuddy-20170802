@@ -104,18 +104,15 @@ public class Budgets {
 
     public Integer getTotal(String startDate, String endDate) throws ParseException {
         Dates dates = new Dates(startDate, endDate);
-        List<YearMonth> monthListBetween = dates.getYearMonthListBetween();
 
-        List<Budget> budgets = repo.findByMonthIn(monthListBetween.stream()
+        List<Budget> budgets = repo.findByMonthIn(dates.getYearMonthListBetween().stream()
                 .map(dates.TO_MONTH_FORMATTER::format).collect(Collectors.toList()));
 
         Map<String, Map<String, Integer>> detailOfMonth = dates.getDetailsOfEachMonth();
         int rtn = 0;
         for (Budget budget : budgets) {
             Map<String, Integer> budgetMonthDetail = detailOfMonth.get(budget.getMonth());
-            int currentBudget =
-                    budget.getAmount() * budgetMonthDetail.get("actual") / budgetMonthDetail.get("length");
-            rtn = rtn + currentBudget;
+            rtn = rtn + budget.getAmount() * budgetMonthDetail.get("actual") / budgetMonthDetail.get("length");
         }
         return rtn;
     }
