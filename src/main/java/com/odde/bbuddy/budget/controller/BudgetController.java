@@ -11,12 +11,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 
 @Controller
@@ -37,7 +36,7 @@ public class BudgetController {
 
     @PostMapping("add")
     public ModelAndView save(Budget budget) {
-        Map<String, String> errMSg = checkBudgetErr(budget);
+        Map<String, String> errMSg = validations.validate(budget);
         if (!errMSg.isEmpty()) {
             return modelAndViewWithError(errMSg);
         }
@@ -46,45 +45,74 @@ public class BudgetController {
         return getModelAndView("redirect:/budgets");
     }
 
+    class BudgetsInView {
+        private final List<BudgetInView> budgetsInView;
+
+        public BudgetsInView(List<Budget> budgets){
+            budgetsInView = budgets.stream().map(BudgetInView::new).collect(Collectors.toList());
+        }
+
+        public List<BudgetInView> getBudgets(){
+            return budgetsInView;
+        }
+    }
+
     @GetMapping
     public ModelAndView index() {
         ModelAndView modelAndView = getModelAndView("budgets/index");
 
         List<Budget> budgets = this.budgets.getAll();
 
-        List<BudgetInView> budgetsInView = new ArrayList<>();
-        budgets.forEach(budget -> {
-                    BudgetInView budgetInView = new BudgetInView();
-                    budgetInView.setMonth(budget.getMonth());
-                    DecimalFormat dt = new DecimalFormat("TWD #,###.00");
-                    budgetInView.setAmount(dt.format(budget.getAmount()));
-                    budgetsInView.add(budgetInView);
-                });
-
-        modelAndView.getModel().put("budgets", budgetsInView);
+        modelAndView.getModel().put("budgets", new BudgetsInView(budgets).getBudgets());
 
         return modelAndView;
     }
 
-    private Map<String, String> checkBudgetErr(Budget budget) {
-        Map<String, String> errMSg = new HashMap<>();
-        String month = budget.getMonth();
-        Integer amount = budget.getAmount();
-
-        // YYYY-MM
+    private boolean validateFormat(String month){
         SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM");
         format1.setLenient(false);
         try {
             format1.parse(month);
+            return true;
         } catch (ParseException e) {
-            errMSg.put("monthErrMsg", "month should be a valid date");
+            return false;
         }
-
-        if (amount <= 0) {
-            errMSg.put("amountErrMsg", "amount should be larger than or equal to 1");
-        }
-        return errMSg;
     }
+
+
+    class Validation {
+        Predicate<Budget> validate;
+        String key;
+        String message;
+
+        Validation(Predicate<Budget> validate, String key, String message){
+            this.validate = validate;
+            this.validate.negate();
+            this.key = key;
+            this.message = message;
+        }
+    }
+
+    class Validations {
+        List<Validation> validations;
+
+        public Validations(Validation... validations){
+            this.validations = Arrays.asList(validations);
+        }
+        public Map<String, String> validate(Budget budget){
+            Map<String, String> errMSg = new HashMap<>();
+            for (Validation validation : validations) {
+                if (validation.validate.test(budget)){
+                    errMSg.put(validation.key, validation.message);
+                    return errMSg;
+                }
+            }
+        }
+    }
+    Validations validations = new Validations(
+            new Validation(entity -> entity.getMonth().isEmpty(), "monthErrMsg", "Month should not be empty")
+
+    );
 
     private ModelAndView getModelAndView(String viewName) {
         ModelAndView modelAndView = new ModelAndView();
