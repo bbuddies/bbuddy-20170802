@@ -10,11 +10,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.text.DecimalFormat;
-import java.util.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.function.Predicate;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -36,7 +33,7 @@ public class BudgetController {
 
     @PostMapping("add")
     public ModelAndView save(Budget budget) {
-        Map<String, String> errMSg = validations.validate(budget);
+        Map<String, String> errMSg = new BudgetInView(budget).validate();
         if (!errMSg.isEmpty()) {
             return modelAndViewWithError(errMSg);
         }
@@ -67,52 +64,6 @@ public class BudgetController {
 
         return modelAndView;
     }
-
-    private boolean validateFormat(String month){
-        SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM");
-        format1.setLenient(false);
-        try {
-            format1.parse(month);
-            return true;
-        } catch (ParseException e) {
-            return false;
-        }
-    }
-
-
-    class Validation {
-        Predicate<Budget> validate;
-        String key;
-        String message;
-
-        Validation(Predicate<Budget> validate, String key, String message){
-            this.validate = validate;
-            this.validate.negate();
-            this.key = key;
-            this.message = message;
-        }
-    }
-
-    class Validations {
-        List<Validation> validations;
-
-        public Validations(Validation... validations){
-            this.validations = Arrays.asList(validations);
-        }
-        public Map<String, String> validate(Budget budget){
-            Map<String, String> errMSg = new HashMap<>();
-            for (Validation validation : validations) {
-                if (validation.validate.test(budget)){
-                    errMSg.put(validation.key, validation.message);
-                    return errMSg;
-                }
-            }
-        }
-    }
-    Validations validations = new Validations(
-            new Validation(entity -> entity.getMonth().isEmpty(), "monthErrMsg", "Month should not be empty")
-
-    );
 
     private ModelAndView getModelAndView(String viewName) {
         ModelAndView modelAndView = new ModelAndView();
