@@ -1,11 +1,10 @@
 package com.odde.bbuddy.acceptancetest.steps;
 
-import com.odde.bbuddy.acceptancetest.data.EditableBudget;
+import com.odde.bbuddy.acceptancetest.data.BudgetForTest;
 import com.odde.bbuddy.acceptancetest.data.Messages;
 import com.odde.bbuddy.acceptancetest.data.budget.BudgetRepoForTest;
 import com.odde.bbuddy.acceptancetest.driver.UiDriver;
 import com.odde.bbuddy.budget.repo.Budget;
-import com.odde.bbuddy.budget.repo.BudgetRepo;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -28,8 +27,7 @@ public class BudgetListSteps {
     Messages messages;
 
     @When("^add a budget of month '(.+)' with amount (\\d+)$")
-    public void add_a_budget_of_month_with_amount(String month,
-                                                  int amount) throws Throwable {
+    public void add_a_budget_of_month_with_amount(String month, int amount) {
         driver.navigateTo("/budgets/add");
         driver.inputTextByName(month, "month");
         driver.inputTextByName(String.valueOf(amount), "amount");
@@ -37,7 +35,7 @@ public class BudgetListSteps {
     }
 
     @Then("^list budgets as below$")
-    public void list_budgets_as_below(List<EditableBudget> budgets) throws Throwable {
+    public void list_budgets_as_below(List<BudgetForTest> budgets) throws Throwable {
         driver.waitForTextPresent(budgets.get(0).month);
         driver.waitForTextPresent(budgets.get(0).amount);
     }
@@ -57,5 +55,24 @@ public class BudgetListSteps {
                 fail("There's still a budget... " + month + " " + amount);
             }
         }
+    }
+
+    @Given("^exist a list of budgets$")
+    public void exist_a_list_of_budgets(List<BudgetForTest> budgets) throws Throwable {
+        budgets.forEach(budgetForTest ->
+                add_a_budget_of_month_with_amount(budgetForTest.month, Integer.valueOf(budgetForTest.amount)));
+    }
+
+    @When("^query starts with date \"([^\"]*)\" and ends with date \"([^\"]*)\"$")
+    public void query_starts_with_date_and_ends_with_date(String startDate, String endDate) throws Throwable {
+        driver.navigateTo("/budgets/getTotal");
+        driver.inputTextByName(startDate, "startDate");
+        driver.inputTextByName(endDate, "endDate");
+        driver.clickByText("Get");
+    }
+
+    @Then("^total of budget is (\\d+)$")
+    public void total_of_budget_is(int total) throws Throwable {
+        driver.waitForTextPresent(String.valueOf(total));
     }
 }

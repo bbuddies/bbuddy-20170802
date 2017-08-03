@@ -9,6 +9,7 @@ import org.springframework.web.servlet.ModelAndView;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
@@ -51,6 +52,19 @@ public class BudgetControllerTest {
         BudgetInView  actualBudgetInView = ((List<BudgetInView>) result.getModel().get("budgets")).get(0);
         assertEquals(budgetsInView.getAmount(), actualBudgetInView.getAmount());
         assertEquals(budgetsInView.getMonth(), actualBudgetInView.getMonth());
+    }
+
+    @Test
+    public void getTotal() {
+        Integer total = 5000;
+        String startDate = "2017-04-01";
+        String endDate = "2017-04-30";
+        when(budgets.getTotal(startDate, endDate)).thenReturn(total);
+
+        ModelAndView modelAndView = controller.getTotal(startDate, endDate);
+
+        assertThat(modelAndView.getViewName()).isEqualTo("redirect:/budgets/getTotal");
+        assertThat(modelAndView.getModel().get("total")).isEqualTo(total);
     }
 
     private Budget saveBudget(String month,

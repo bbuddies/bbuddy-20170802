@@ -19,3 +19,10 @@ Feature: Budget
       | month   | amount       |
       | 2017-10 | TWD 3,000.00 |
     And list doesn't include a budget of month '2017-10' with amount 10000
+
+  Scenario: Query budget with date range and get a total of all budgets
+    Given exist a list of budgets
+      | month   | amount |
+      | 2017-04 | 5000   |
+    When query starts with date "2017-04-01" and ends with date "2017-04-30"
+    Then total of budget is 5000

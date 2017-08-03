@@ -66,6 +66,19 @@ public class BudgetController {
         return modelAndView;
     }
 
+    @GetMapping("getTotal")
+    public String getTotal() {
+        return "budgets/getTotal";
+    }
+
+    @PostMapping("getTotal")
+    public ModelAndView getTotal(String startDate, String endDate) {
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.addObject("total", budgets.getTotal(startDate, endDate));
+        modelAndView.setViewName("redirect:/budgets/getTotal");
+        return modelAndView;
+    }
+
     private Map<String, String> checkBudgetErr(Budget budget) {
         Map<String, String> errMSg = new HashMap<>();
         String month = budget.getMonth();
@@ -99,5 +112,4 @@ public class BudgetController {
                                              .put(k, v));
         return modelAndView;
     }
-
 }

@@ -85,3 +85,5 @@ gradle-app.setting
 
 # Sonar
 .sonar
+
+*.ipr

@@ -29,4 +29,8 @@ public class Budgets {
     public List<Budget> getAll() {
         return repo.findAll();
     }
+
+    public Integer getTotal(String startDate, String endDate) {
+        return null;
+    }
 }
