@@ -41,27 +41,25 @@ public class Budgets {
         BigDecimal total = BigDecimal.ZERO;
         List<Budget> budgets = getAll();
 
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        sdf.setLenient(false);
+
+        Date start = sdf.parse(startDate);
+        Date end = sdf.parse(endDate);
+
+        Calendar c = Calendar.getInstance();
+
         for (Budget budget : budgets) {
-            SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
-            format1.setLenient(false);
-            Calendar c = Calendar.getInstance();
-
-            String month = budget.getMonth() + "-01"; // 2017-12
-            Integer amount = budget.getAmount();
-
-            Date monthStart = format1.parse(month);
-            c.setTime(monthStart);
-
-            Date start = format1.parse(startDate);
-            Date end = format1.parse(endDate);
+            c.setTime(sdf.parse(budget.getMonth() + "-01"));
 
             int lastDate = c.getActualMaximum(Calendar.DAY_OF_MONTH);
-            BigDecimal avgAmount = BigDecimal.valueOf(amount * 1d / lastDate);
+            BigDecimal avgAmount = BigDecimal.valueOf(budget.getAmount() * 1d / lastDate);
 
+            // sum the avg budget in month when date in range
             for (int i = 0; i < lastDate; i++) {
                 Date date = c.getTime();
 
-                if (start.equals(date) || end.equals(date) || (start.before(date) && date.before(end))) {
+                if (isDateInRange(date, start, end)) {
                     total = total.add(avgAmount);
                 }
                 c.add(Calendar.DATE, 1);
@@ -69,5 +67,11 @@ public class Budgets {
         }
 
         return total.setScale(0, BigDecimal.ROUND_HALF_UP);
+    }
+
+    private boolean isDateInRange(Date date,
+                                  Date start,
+                                  Date end) {
+        return start.equals(date) || end.equals(date) || (start.before(date) && date.before(end));
     }
 }
