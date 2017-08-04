@@ -47,7 +47,7 @@ public class BudgetController {
                                String endDate) throws ParseException {
         ModelAndView modelAndView = getIndex();
 
-        BigDecimal total = this.budgets.getBudgetInDate(this.budgets.getAll(), startDate, endDate);
+        BigDecimal total = this.budgets.getBudgetInDate(startDate, endDate);
 
         modelAndView.getModel()
                     .put("total", total.toString());

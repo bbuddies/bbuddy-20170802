@@ -36,10 +36,10 @@ public class Budgets {
         return repo.findAll();
     }
 
-    public BigDecimal getBudgetInDate(List<Budget> budgets,
-                                      String startDate,
+    public BigDecimal getBudgetInDate(String startDate,
                                       String endDate) throws ParseException {
         BigDecimal total = BigDecimal.ZERO;
+        List<Budget> budgets = getAll();
 
         for (Budget budget : budgets) {
             SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");

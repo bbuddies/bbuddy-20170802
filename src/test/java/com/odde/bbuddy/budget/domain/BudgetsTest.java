@@ -132,6 +132,8 @@ public class BudgetsTest {
     private BigDecimal getTotalBudgetFromDateRange(List<Budget> budgets,
                                                    String startDate,
                                                    String endDate) throws ParseException {
-        return this.budgets.getBudgetInDate(budgets, startDate, endDate);
+        when(this.budgets.getAll()).thenReturn(budgets);
+
+        return this.budgets.getBudgetInDate(startDate, endDate);
     }
 }
