@@ -43,11 +43,11 @@ public class Budgets {
         List<Budget> budgets = repo.findByMonthIn(dates.getYearMonthListBetween().stream()
                 .map(dates.TO_MONTH_FORMATTER::format).collect(Collectors.toList()));
 
-        Map<String, Map<String, Integer>> detailOfMonth = dates.getDetailsOfEachMonth();
+        Map<String, BudgetDetail> detailOfMonth = dates.getDetailsOfEachMonth();
         int rtn = 0;
         for (Budget budget : budgets) {
-            Map<String, Integer> budgetMonthDetail = detailOfMonth.get(budget.getMonth());
-            rtn = rtn + budget.getAmount() * budgetMonthDetail.get("actual") / budgetMonthDetail.get("length");
+            BudgetDetail budgetMonthDetail = detailOfMonth.get(budget.getMonth());
+            rtn = rtn + budget.getAmount() * budgetMonthDetail.getActualDays() / budgetMonthDetail.getLengthOfMonth();
         }
         return rtn;
     }

@@ -32,22 +32,19 @@ class Dates {
         }
     }
 
-    Map<String, Map<String, Integer>> getDetailsOfEachMonth() {
-        Map<String, Map<String, Integer>> rtn = new HashMap<>();
+    Map<String, BudgetDetail> getDetailsOfEachMonth() {
+        Map<String, BudgetDetail> rtn = new HashMap<>();
         long monthRange = ChronoUnit.MONTHS.between(startDate, endDate);
 
         if (isTheSameMonth) {
-            Map<String, Integer> detail = new HashMap<>();
-            detail.put("actual", getDaysBetween(startDate, endDate) + 1);
-            detail.put("length", startDate.lengthOfMonth());
-            rtn.put(TO_MONTH_FORMATTER.format(startDate), detail);
+            rtn.put(TO_MONTH_FORMATTER.format(startDate),
+                    new BudgetDetail(getDaysBetween(startDate, endDate) + 1,
+                            startDate.lengthOfMonth()));
         } else {
             for (int i = 0; i <= monthRange; i++) {
                 YearMonth inYearMonth = YearMonth.from(startDate.plusMonths(i));
-                Map<String, Integer> detail = new HashMap<>();
-                detail.put("length", inYearMonth.lengthOfMonth());
-                detail.put("actual", getActualDays(inYearMonth));
-                rtn.put(TO_MONTH_FORMATTER.format(inYearMonth), detail);
+                rtn.put(TO_MONTH_FORMATTER.format(inYearMonth),
+                        new BudgetDetail(getActualDays(inYearMonth), inYearMonth.lengthOfMonth()));
             }
         }
 
@@ -67,4 +64,5 @@ class Dates {
     private int getDaysBetween(LocalDate start, LocalDate end) {
         return Math.toIntExact(ChronoUnit.DAYS.between(start, end));
     }
+
 }
