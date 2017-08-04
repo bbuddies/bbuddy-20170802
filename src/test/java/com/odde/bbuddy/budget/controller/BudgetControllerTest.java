@@ -45,20 +45,54 @@ public class BudgetControllerTest {
     }
 
     @Test
-    public void search_budget() throws Exception {
-        BigDecimal total = getTotalBudgetFromDateRange("2017-12-01", "2017-12-10");
+    public void _12月有預算資料找12月1號到12月10號() throws Exception {
+        List<Budget> budgets = Arrays.asList(new Budget("2017-12", 3100));
+        BigDecimal total = getTotalBudgetFromDateRange(budgets, "2017-12-01", "2017-12-10");
         assertEquals(BigDecimal.valueOf(1000), total);
     }
 
     @Test
-    public void search_budget_when_avg_amount_is_float() throws Exception {
-        BigDecimal total = getTotalBudgetFromDateRange("2017-03-01", "2017-03-15");
-        assertEquals(BigDecimal.valueOf(1452), total);
+    public void _11月資料_找10月1號到11月10號() throws Exception {
+        List<Budget> budgets = Arrays.asList(new Budget("2017-11", 3000));
+        BigDecimal total = getTotalBudgetFromDateRange(budgets, "2017-10-01", "2017-11-10");
+        assertEquals(BigDecimal.valueOf(1000), total);
     }
 
     @Test
-    public void search_budget_when_no_date_in_date_range() throws Exception {
-        BigDecimal total = getTotalBudgetFromDateRange("2017-11-01", "2017-11-10");
+    public void _11and12月資料_找10月1號到隔年1月1號() throws Exception {
+        List<Budget> budgets = Arrays.asList(new Budget("2017-11", 3100), new Budget("2017-12", 3100));
+        BigDecimal total = getTotalBudgetFromDateRange(budgets, "2017-10-01", "2018-01-01");
+        assertEquals(BigDecimal.valueOf(6200), total);
+    }
+
+    @Test
+    public void _10and12月資料_找10月15號到12月15號() throws Exception {
+        List<Budget> budgets = Arrays.asList(new Budget("2017-10", 3100), new Budget("2017-12", 3100));
+        BigDecimal total = getTotalBudgetFromDateRange(budgets, "2017-10-15", "2017-12-15");
+        assertEquals(BigDecimal.valueOf(3200), total);
+    }
+
+    @Test
+    public void _11and12月資料_找11月20號到12月15號() throws Exception {
+        List<Budget> budgets = Arrays.asList(new Budget("2017-11", 3100), new Budget("2017-12", 3100));
+
+        BigDecimal total = getTotalBudgetFromDateRange(budgets, "2017-11-20", "2017-12-15");
+        assertEquals(BigDecimal.valueOf(2637), total);
+    }
+
+    @Test
+    public void _11and12月資料_找11月20號到隔年01月15號() throws Exception {
+        List<Budget> budgets = Arrays.asList(new Budget("2017-11", 3100), new Budget("2017-12", 3100));
+
+        BigDecimal total = getTotalBudgetFromDateRange(budgets, "2017-11-20", "2018-01-15");
+        assertEquals(BigDecimal.valueOf(4237), total);
+    }
+
+    @Test
+    public void _12月資料_找11月01號到11月10號() throws Exception {
+        List<Budget> budgets = Arrays.asList(new Budget("2017-12", 3100));
+
+        BigDecimal total = getTotalBudgetFromDateRange(budgets, "2017-11-01", "2017-11-10");
         assertEquals(BigDecimal.valueOf(0), total);
     }
 
@@ -105,14 +139,9 @@ public class BudgetControllerTest {
         return Arrays.asList(budget);
     }
 
-    private BigDecimal getTotalBudgetFromDateRange(String startDate,
+    private BigDecimal getTotalBudgetFromDateRange(List<Budget> budgets,
+                                                   String startDate,
                                                    String endDate) throws ParseException {
-        List<Budget> budgets = Arrays.asList(new Budget("2017-02", 2800),
-                                             new Budget("2018-02", 2800),
-                                             new Budget("2019-02", 2800),
-                                             new Budget("2020-02", 2800),
-                                             new Budget("2017-03", 3000),
-                                             new Budget("2017-12", 3100));
 
         return controller.getBudgetInDate(startDate, endDate, budgets);
     }
