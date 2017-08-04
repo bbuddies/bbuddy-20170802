@@ -44,9 +44,9 @@ public class Budgets {
         for (Budget budget : budgets) {
             BudgetDetail detail = new BudgetDetail(budget);
 
-            for (int i = 0; i < detail.dayLength; i++) {
+            for (int i = 0; i < detail.dayCount; i++) {
                 if (searchRange.isDateInRange(detail.getDate())) {
-                    sumAmount = sumAmount.add(detail.avgAmount);
+                    sumAmount = sumAmount.add(detail.dailyBudget);
                 }
                 detail.nextDate();
             }
@@ -56,8 +56,8 @@ public class Budgets {
     }
 
     class BudgetDetail {
-        private final int dayLength;
-        private final BigDecimal avgAmount;
+        private final int dayCount;
+        private final BigDecimal dailyBudget;
         private final Calendar c;
 
         public BudgetDetail(Budget budget) throws ParseException {
@@ -65,8 +65,8 @@ public class Budgets {
             sdf.setLenient(false);
             c = Calendar.getInstance();
             c.setTime(sdf.parse(budget.getMonth() + "-01"));
-            dayLength = c.getActualMaximum(Calendar.DAY_OF_MONTH);
-            avgAmount = BigDecimal.valueOf(budget.getAmount() * 1d / dayLength);
+            dayCount = c.getActualMaximum(Calendar.DAY_OF_MONTH);
+            dailyBudget = BigDecimal.valueOf(budget.getAmount() * 1d / dayCount);
         }
 
         public void nextDate() {

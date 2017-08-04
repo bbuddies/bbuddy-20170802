@@ -2,6 +2,7 @@ package com.odde.bbuddy.budget.domain;
 
 import com.odde.bbuddy.budget.repo.Budget;
 import com.odde.bbuddy.budget.repo.BudgetRepo;
+import com.odde.bbuddy.common.DateRange;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -134,6 +135,6 @@ public class BudgetsTest {
                                                    String endDate) throws ParseException {
         when(this.budgets.getAll()).thenReturn(budgets);
 
-        return this.budgets.getBudgetInDate(startDate, endDate);
+        return this.budgets.getBudgetInDate(new DateRange(startDate, endDate));
     }
 }
