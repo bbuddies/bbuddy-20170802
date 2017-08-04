@@ -42,3 +42,39 @@ Feature: Budget
       | 2017-07 | 6200   |
     When query starts with date "2017-04-04" and ends with date "2017-07-10"
     Then total of budget is 10700
+
+  Scenario: Query budget with range without budgets and get the total of all budgets
+    Given exist a list of budgets
+      | month   | amount |
+      | 2017-04 | 3000   |
+      | 2017-06 | 6000   |
+      | 2017-07 | 6200   |
+    When query starts with date "2017-05-01" and ends with date "2017-05-10"
+    Then total of budget is 0
+
+  Scenario: Query budget with range after and get the total of all budgets
+    Given exist a list of budgets
+      | month   | amount |
+      | 2017-04 | 3000   |
+      | 2017-06 | 6000   |
+      | 2017-07 | 6200   |
+    When query starts with date "2017-07-22" and ends with date "2017-08-10"
+    Then total of budget is 2000
+
+  Scenario: Query budget with range before and get the total of all budgets
+    Given exist a list of budgets
+      | month   | amount |
+      | 2017-04 | 3000   |
+      | 2017-06 | 6000   |
+      | 2017-07 | 6200   |
+    When query starts with date "2017-03-10" and ends with date "2017-04-10"
+    Then total of budget is 1000
+
+  Scenario: Query budget with range include all budgets and beyond and get the total of all budgets
+    Given exist a list of budgets
+      | month   | amount |
+      | 2017-04 | 3000   |
+      | 2017-06 | 6000   |
+      | 2017-07 | 6200   |
+    When query starts with date "2017-03-10" and ends with date "2017-08-10"
+    Then total of budget is 15200
