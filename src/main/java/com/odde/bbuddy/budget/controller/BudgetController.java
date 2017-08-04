@@ -47,8 +47,7 @@ public class BudgetController {
                                String endDate) throws ParseException {
         ModelAndView modelAndView = getIndex();
 
-        List<Budget> budgets = this.budgets.getAll();
-        BigDecimal total = getBudgetInDate(startDate, endDate, budgets);
+        BigDecimal total = this.budgets.getBudgetInDate(this.budgets.getAll(), startDate, endDate);
 
         modelAndView.getModel()
                     .put("total", total.toString());
@@ -59,41 +58,6 @@ public class BudgetController {
         modelAndView.getModel()
                     .put("DateRange", startDate + "~" + endDate);
         return modelAndView;
-    }
-
-    public BigDecimal getBudgetInDate(String startDate,
-                                      String endDate,
-                                      List<Budget> budgets) throws ParseException {
-        BigDecimal total = BigDecimal.ZERO;
-
-        for (Budget budget : budgets) {
-            SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
-            format1.setLenient(false);
-            Calendar c = Calendar.getInstance();
-
-            String month = budget.getMonth() + "-01"; // 2017-12
-            Integer amount = budget.getAmount();
-
-            Date monthStart = format1.parse(month);
-            c.setTime(monthStart);
-
-            Date start = format1.parse(startDate);
-            Date end = format1.parse(endDate);
-
-            int lastDate = c.getActualMaximum(Calendar.DAY_OF_MONTH);
-            BigDecimal avgAmount = BigDecimal.valueOf(amount * 1d / lastDate);
-
-            for (int i = 0; i < lastDate; i++) {
-                Date date = c.getTime();
-
-                if (start.equals(date) || end.equals(date) || (start.before(date) && date.before(end))) {
-                    total = total.add(avgAmount);
-                }
-                c.add(Calendar.DATE, 1);
-            }
-        }
-
-        return total.setScale(0, BigDecimal.ROUND_HALF_UP);
     }
 
     @GetMapping
