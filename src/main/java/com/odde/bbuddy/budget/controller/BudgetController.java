@@ -3,6 +3,7 @@ package com.odde.bbuddy.budget.controller;
 import com.odde.bbuddy.budget.domain.Budgets;
 import com.odde.bbuddy.budget.repo.Budget;
 import com.odde.bbuddy.budget.view.BudgetInView;
+import com.odde.bbuddy.common.DateRange;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,7 +48,7 @@ public class BudgetController {
                                String endDate) throws ParseException {
         ModelAndView modelAndView = getIndex();
 
-        BigDecimal total = this.budgets.getBudgetInDate(startDate, endDate);
+        BigDecimal total = this.budgets.getBudgetInDate(new DateRange(startDate, endDate));
 
         modelAndView.getModel()
                     .put("total", total.toString());

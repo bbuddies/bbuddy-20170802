@@ -2,6 +2,7 @@ package com.odde.bbuddy.budget.domain;
 
 import com.odde.bbuddy.budget.repo.Budget;
 import com.odde.bbuddy.budget.repo.BudgetRepo;
+import com.odde.bbuddy.common.DateRange;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -36,42 +37,45 @@ public class Budgets {
         return repo.findAll();
     }
 
-    public BigDecimal getBudgetInDate(String startDate,
-                                      String endDate) throws ParseException {
-        BigDecimal total = BigDecimal.ZERO;
+    public BigDecimal getBudgetInDate(DateRange searchRange) throws ParseException {
+        BigDecimal sumAmount = BigDecimal.ZERO;
         List<Budget> budgets = getAll();
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        sdf.setLenient(false);
-
-        Date start = sdf.parse(startDate);
-        Date end = sdf.parse(endDate);
-
-        Calendar c = Calendar.getInstance();
-
         for (Budget budget : budgets) {
-            c.setTime(sdf.parse(budget.getMonth() + "-01"));
+            BudgetDetail detail = new BudgetDetail(budget);
 
-            int lastDate = c.getActualMaximum(Calendar.DAY_OF_MONTH);
-            BigDecimal avgAmount = BigDecimal.valueOf(budget.getAmount() * 1d / lastDate);
-
-            // sum the avg budget in month when date in range
-            for (int i = 0; i < lastDate; i++) {
-                Date date = c.getTime();
-
-                if (isDateInRange(date, start, end)) {
-                    total = total.add(avgAmount);
+            for (int i = 0; i < detail.dayCount; i++) {
+                if (searchRange.isDateInRange(detail.getDate())) {
+                    sumAmount = sumAmount.add(detail.dailyBudget);
                 }
-                c.add(Calendar.DATE, 1);
+                detail.nextDate();
             }
         }
 
-        return total.setScale(0, BigDecimal.ROUND_HALF_UP);
+        return sumAmount.setScale(0, BigDecimal.ROUND_HALF_UP);
     }
 
-    private boolean isDateInRange(Date date,
-                                  Date start,
-                                  Date end) {
-        return start.equals(date) || end.equals(date) || (start.before(date) && date.before(end));
+    class BudgetDetail {
+        private final int dayCount;
+        private final BigDecimal dailyBudget;
+        private final Calendar c;
+
+        public BudgetDetail(Budget budget) throws ParseException {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            sdf.setLenient(false);
+            c = Calendar.getInstance();
+            c.setTime(sdf.parse(budget.getMonth() + "-01"));
+            dayCount = c.getActualMaximum(Calendar.DAY_OF_MONTH);
+            dailyBudget = BigDecimal.valueOf(budget.getAmount() * 1d / dayCount);
+        }
+
+        public void nextDate() {
+            c.add(Calendar.DATE, 1);
+        }
+
+        public Date getDate() {
+            return c.getTime();
+        }
     }
+
 }
