@@ -29,4 +29,15 @@ public class Budgets {
     public List<Budget> getAll() {
         return repo.findAll();
     }
+
+    public Long summarize(String start, String end) {
+        List<Budget> budgets = getAll();
+        if (start.equals(end)) {
+            return budgets
+                    .stream()
+                    .mapToLong(budget -> Long.valueOf(budget.getAmount()))
+                    .sum();
+        }
+        return 0L;
+    }
 }

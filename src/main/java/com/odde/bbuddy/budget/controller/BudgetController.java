@@ -66,6 +66,19 @@ public class BudgetController {
         return modelAndView;
     }
 
+    @GetMapping("query")
+    public String query() {
+        return "budgets/query";
+    }
+
+    @PostMapping("query")
+    public ModelAndView queryBudget(String start, String end) {
+        Long total = budgets.summarize(start, end);
+        ModelAndView mav = new ModelAndView("redirect:/budgets/query");
+        mav.addObject("total", total);
+        return mav;
+    }
+
     private Map<String, String> checkBudgetErr(Budget budget) {
         Map<String, String> errMSg = new HashMap<>();
         String month = budget.getMonth();

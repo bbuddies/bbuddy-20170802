@@ -54,6 +54,15 @@ public class BudgetsTest {
         assertThat(captor.getValue().getAmount()).isEqualTo(newAmount);
     }
 
+    @Test
+    public void summarize_with_one_day() {
+        givenBudgets(budget("2017-04", 3000));
+
+        Long total = budgets.summarize("2017-04-01", "2017-04-01");
+
+        assertThat(total).isEqualTo(3000);
+    }
+
     private Budget existedBudget(Long id, String month, int oldAmount) {
         Budget budget = budget(month, oldAmount);
         budget.setId(id);

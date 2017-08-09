@@ -4,8 +4,6 @@ import com.odde.bbuddy.acceptancetest.data.EditableBudget;
 import com.odde.bbuddy.acceptancetest.data.Messages;
 import com.odde.bbuddy.acceptancetest.data.budget.BudgetRepoForTest;
 import com.odde.bbuddy.acceptancetest.driver.UiDriver;
-import com.odde.bbuddy.budget.repo.Budget;
-import com.odde.bbuddy.budget.repo.BudgetRepo;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -14,8 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.*;
 
 public class BudgetListSteps {
     @Autowired
@@ -28,8 +25,7 @@ public class BudgetListSteps {
     Messages messages;
 
     @When("^add a budget of month '(.+)' with amount (\\d+)$")
-    public void add_a_budget_of_month_with_amount(String month,
-                                                  int amount) throws Throwable {
+    public void add_a_budget_of_month_with_amount(String month, int amount) {
         driver.navigateTo("/budgets/add");
         driver.inputTextByName(month, "month");
         driver.inputTextByName(String.valueOf(amount), "amount");
@@ -44,7 +40,7 @@ public class BudgetListSteps {
 
     @Given("^exist a budget of month '(.+)' with amount (\\d+)$")
     public void exist_a_budget_of_month_with_amount(String month, int amount) throws Throwable {
-        repo.save(new Budget(1, month, amount));
+        add_a_budget_of_month_with_amount(month, amount);
     }
 
     @Then("^list doesn't include a budget of month '(.+)' with amount (\\d+)$")
@@ -57,5 +53,25 @@ public class BudgetListSteps {
                 fail("There's still a budget... " + month + " " + amount);
             }
         }
+    }
+
+    @Given("^existing budgets as below$")
+    public void existing_budgets_as_below(List<EditableBudget> budgets) throws Throwable {
+        budgets.forEach(budget -> {
+            add_a_budget_of_month_with_amount(budget.month, Integer.valueOf(budget.amount));
+        });
+    }
+
+    @When("^query budget with start \"([^\"]*)\" and end \"([^\"]*)\"$")
+    public void query_budget_with_start_and_end(String start, String end) throws Throwable {
+        driver.navigateTo("/budgets/query");
+        driver.inputTextByName(start, "start");
+        driver.inputTextByName(end, "end");
+        driver.clickByText("query");
+    }
+
+    @Then("^should get total amount of (\\d+)$")
+    public void should_get_total_amount_of(int total) throws Throwable {
+        driver.waitForTextPresent(total + "");
     }
 }
