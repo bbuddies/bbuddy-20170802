@@ -60,8 +60,16 @@ public class BudgetsTest {
 
         Long total = budgets.summarize("2017-04-01", "2017-04-01");
 
-        assertThat(total).isEqualTo(3000);
+        assertThat(total).isEqualTo(100);
     }
+
+//    @Test
+//    public void query_budget_with_two_day() {
+//        givenBudgets(budget("2017-04", 3000));
+//
+//        Long total = budgets.summarize("2017-04-01", "2017-04-02");
+//
+//    }
 
     private Budget existedBudget(Long id, String month, int oldAmount) {
         Budget budget = budget(month, oldAmount);
