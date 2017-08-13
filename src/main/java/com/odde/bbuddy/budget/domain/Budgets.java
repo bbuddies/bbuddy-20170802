@@ -47,14 +47,10 @@ public class Budgets {
             Period between = Period.between(LocalDate.parse(start, DATE_FORMATTER), LocalDate.parse(end, DATE_FORMATTER));
             return startMonthTotal / getMonthDayCount(startMonth) * (between.getDays() + 1);
         }
-        return getAll().stream()
+
+        long budgetOfStartAndEnd = budgetOfMonth(getAll(), start) + budgetOfMonth(getAll(), end);
+        return budgetOfStartAndEnd + getAll().stream()
                 .mapToLong(budget -> {
-                    if (isBudgetSameMonthAs(budget, startMonth)) {
-                        return budgetFromStartDay(budget, start);
-                    }
-                    if (isBudgetSameMonthAs(budget, endMonth)) {
-                        return budgetTillEndDay(budget, end);
-                    }
                     if (isBudgetBetween(budget, startMonth, endMonth)) {
                         return budget.getAmount();
                     }
@@ -62,16 +58,10 @@ public class Budgets {
                 }).sum();
     }
 
-    private long budgetTillEndDay(Budget budget, String end) {
-        YearMonth budgetYM = YearMonth.parse(budget.getMonth(), MONTH_FORMATTER);
-        Period between = Period.between(budgetYM.atDay(1), LocalDate.parse(end, DATE_FORMATTER));
-        return budget.getOneDayAmountOfBudget() * (between.getDays() + 1);
-    }
-
-    private long budgetFromStartDay(Budget budget, String start) {
-        YearMonth budgetYM = YearMonth.parse(budget.getMonth(), MONTH_FORMATTER);
-        Period between = Period.between(LocalDate.parse(start, DATE_FORMATTER), budgetYM.atDay(budgetYM.lengthOfMonth()));
-        return budget.getOneDayAmountOfBudget() * (between.getDays() + 1);
+    private long budgetOfMonth(List<Budget> budgets, String start) {
+        return budgets.stream()
+                .filter(budget -> budget.getMonth().equals(start.substring(0, 7)))
+                .mapToLong(Budget::getAmount).sum();
     }
 
     private boolean isBudgetBetween(Budget budget, String startMonth, String endMonth) {
@@ -79,10 +69,6 @@ public class Budgets {
         YearMonth startYM = YearMonth.parse(startMonth, MONTH_FORMATTER);
         YearMonth endYM = YearMonth.parse(endMonth, MONTH_FORMATTER);
         return budgetYM.isAfter(startYM) && budgetYM.isBefore(endYM);
-    }
-
-    private boolean isBudgetSameMonthAs(Budget budget, String month) {
-        return YearMonth.parse(budget.getMonth(), MONTH_FORMATTER).equals(YearMonth.parse(month, MONTH_FORMATTER));
     }
 
     private boolean sameDay(String start, String end) {
