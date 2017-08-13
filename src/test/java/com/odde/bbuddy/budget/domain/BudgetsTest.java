@@ -55,7 +55,7 @@ public class BudgetsTest {
     }
 
     @Test
-    public void summarize_with_one_day() {
+    public void query_with_one_day() {
         givenBudgets(budget("2017-04", 3000));
 
         Long total = budgets.summarize("2017-04-01", "2017-04-01");
@@ -63,13 +63,24 @@ public class BudgetsTest {
         assertThat(total).isEqualTo(100);
     }
 
-//    @Test
-//    public void query_budget_with_two_day() {
-//        givenBudgets(budget("2017-04", 3000));
-//
-//        Long total = budgets.summarize("2017-04-01", "2017-04-02");
-//
-//    }
+    @Test
+    public void query_budget_with_two_day_in_one_month() {
+        givenBudgets(budget("2017-04", 3000));
+
+        Long total = budgets.summarize("2017-04-01", "2017-04-02");
+
+        assertThat(total).isEqualTo(200);
+    }
+
+    @Test
+    public void query_budget_across_2_month() {
+        givenBudgets(budget("2017-04", 3000),
+                budget("2017-05", 3100));
+
+        Long total = budgets.summarize("2017-04-01", "2017-05-31");
+
+        assertThat(total).isEqualTo(6100);
+    }
 
     private Budget existedBudget(Long id, String month, int oldAmount) {
         Budget budget = budget(month, oldAmount);
